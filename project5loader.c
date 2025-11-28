@@ -43,9 +43,7 @@ int main(int argc, char *argv[]) {
     int t_count = 0, m_count = 0, start_addr = 0, prog_len = 0, exec_addr = 0;
 
     // parse object file
-    parse_object_file(file, t_records, &t_count, m_records, &m_count, &start_addr, &prog_len, &exec_addr);
-    relocate_and_print(t_records, t_count, m_records, m_count, relocation_address, exec_addr, machine_type);
-   
+
     fclose(file);
     return 0;
 }
