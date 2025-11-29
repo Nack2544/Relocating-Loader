@@ -43,7 +43,19 @@ int main(int argc, char *argv[]) {
     int t_count = 0, m_count = 0, start_addr = 0, prog_len = 0, exec_addr = 0;
 
     // parse object file
+    // Function prototypes
+    void parse_object_file(FILE *file, TextRecord *t_records, int *t_count, ModRecord *m_records, int *m_count, int *start_addr, int *prog_len, int *exec_addr);
+    void relocate_and_print(TextRecord *t_records, int t_count, ModRecord *m_records, int m_count, int relocation_addr, int exec_addr, const char *machine_type);
 
     fclose(file);
     return 0;
 }
+
+
+
+ void parse_object_file(FILE *file, TextRecord *t_records, int *t_count, ModRecord *m_records, int *m_count, int *start_addr, int *prog_len, int *exec_addr){
+    
+ }
+ void relocate_and_print(TextRecord *t_records, int t_count, ModRecord *m_records, int m_count, int relocation_addr, int exec_addr, const char *machine_type){
+
+ }
