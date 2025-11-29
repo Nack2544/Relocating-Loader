@@ -54,7 +54,85 @@ int main(int argc, char *argv[]) {
 
 
  void parse_object_file(FILE *file, TextRecord *t_records, int *t_count, ModRecord *m_records, int *m_count, int *start_addr, int *prog_len, int *exec_addr){
-    
+        char line[MAX_LINE_LENGTH];
+
+        // removes newlines
+        while (fgets(line, sizeof(line), file) != NULL) {
+            size_t len = strlen(line);
+            if (len > 0 && (line[len - 1] == '\n' || line[len - 1] == '\r')) {
+                line[len - 1] = '\0';
+                len--;
+            }
+
+            if (len == 0) continue;
+
+            switch (line[0]) {
+                    // H name startaddr proglen
+                case 'H': {
+
+                    char name[7] = {0};
+                    char start_str[7] = {0};
+                    char len_str[7] = {0};
+
+                    // might need to change format string
+                    sscanf(line, "H%6s%6s%6s", name, start_str, len_str);
+
+                    *start_addr = (int)strtol(start_str, NULL, 16);
+                    *prog_len = (int(strtol(len_str, NULL, 16);
+
+                    *exec_addr = *start_addr;
+                    break;
+                }
+
+                // T startaddr length opcode
+                case 'T': {
+
+                    char addr_str[7] = {0};
+                    char length_str[7] = {0};
+                    char obj_code[MAX_LINE_LENGTH] = {0};
+
+                    sscanf(line, "T%6s%2s%s", name, start_str, len_str);
+        
+                    *t_records[*t_count].start_address = (int)strtol(start_str, NULL, 16);
+                    *t_records[*t_count].length = (int(strtol(len_str, NULL, 16);
+                    strcopy(t_records[*t_count].object_code, obj_code);
+
+                    (*t_count)++;
+                    break;
+                }
+
+                // M address length (+/- symbol)
+                case 'M': {
+
+                    char addr_str[7] = {0};
+                    char length_str[3] = {0};
+
+                    sscanf(line, "M&6s&2s", addr_str, length_str);
+        
+                    *m_records[*m_count].address = (int)strtol(start_str, NULL, 16);
+                    *m_records[*m_count].length = (int(strtol(len_str, NULL, 16);
+
+                    (*m_count)++;
+                    break;
+                }
+
+                // E execaddr
+                case 'E': {
+
+                    char exec_str[7] = {0};
+                    
+                    sscanf(line, "E%6s", exec_str) == 1) {
+                        *exec_records = (int)strtol(start_str, NULL, 16);
+                    }
+                    // done with file
+                    return;
+                }
+
+            }
+            // ignores anything else (comments, breaks)
+            default:
+                break;
+        }
  }
  void relocate_and_print(TextRecord *t_records, int t_count, ModRecord *m_records, int m_count, int relocation_addr, int exec_addr, const char *machine_type){
 
