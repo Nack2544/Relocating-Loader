@@ -24,4 +24,14 @@ typedef struct {
     int length;
 }ModRecord;
 
+void parse_object_file(FILE *file,
+                       TextRecord *t_records, int *t_count,
+                       ModRecord *m_records, int *m_count,
+                       int *start_addr, int *prog_len, int *exec_addr);
+
+void relocate_and_print(TextRecord *t_records, int t_count,
+                        ModRecord *m_records, int m_count,
+                        int relocation_addr, int exec_addr,
+                        const char *machine_type);
+
 #endif 
