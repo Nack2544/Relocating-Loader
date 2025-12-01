@@ -22,7 +22,7 @@ typedef struct {
 typedef struct {
     int address;
     int length;
-}ModRecord;
+} ModRecord;
 
 void parse_object_file(FILE *file,
                        TextRecord *t_records, int *t_count,

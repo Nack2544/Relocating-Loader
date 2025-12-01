@@ -78,7 +78,7 @@ int main(int argc, char *argv[]) {
                     sscanf(line, "H%6s%6s%6s", name, start_str, len_str);
 
                     *start_addr = (int)strtol(start_str, NULL, 16);
-                    *prog_len = (int(strtol(len_str, NULL, 16);
+                    *prog_len = (int)strtol(len_str, NULL, 16);
 
                     *exec_addr = *start_addr;
                     break;
@@ -91,10 +91,10 @@ int main(int argc, char *argv[]) {
                     char length_str[7] = {0};
                     char obj_code[MAX_LINE_LENGTH] = {0};
 
-                    sscanf(line, "T%6s%2s%s", name, start_str, len_str);
+                    sscanf(line, "T%6s%2s%s", addr_str, length_str, obj_code);
         
-                    *t_records[*t_count].start_address = (int)strtol(start_str, NULL, 16);
-                    *t_records[*t_count].length = (int(strtol(len_str, NULL, 16);
+                    *t_records[*t_count].start_address = (int)strtol(length_str, NULL, 16);
+                    *t_records[*t_count].length = (int)strtol(len_str, NULL, 16);
                     strcopy(t_records[*t_count].object_code, obj_code);
 
                     (*t_count)++;
@@ -110,7 +110,7 @@ int main(int argc, char *argv[]) {
                     sscanf(line, "M&6s&2s", addr_str, length_str);
         
                     *m_records[*m_count].address = (int)strtol(start_str, NULL, 16);
-                    *m_records[*m_count].length = (int(strtol(len_str, NULL, 16);
+                    *m_records[*m_count].length = (int)strtol(len_str, NULL, 16);
 
                     (*m_count)++;
                     break;
@@ -135,5 +135,65 @@ int main(int argc, char *argv[]) {
         }
  }
  void relocate_and_print(TextRecord *t_records, int t_count, ModRecord *m_records, int m_count, int relocation_addr, int exec_addr, const char *machine_type){
+
+
+    (void)machine_type;
+
+    for(int i =0 ; i < m_count; i++){
+        int m_addrress= m_records[i].address;
+        int m_length = m_records[i].length;
+
+
+        TextRecord *tr = NULL;
+        for(int t = 0; t < t_count; t++){
+            int start = t_records[t].start_address;
+            int end = start + t_records[t].length;
+
+            if(m_addrress >= start && m_addrress < end){
+                tr = &t_records[i];
+                break;
+            }
+        }
+
+        if (!tr){
+            fprintf(stderr,"Warning: M record at %06X (len=%02X) does not match any T record\n",m_addrress, m_length);
+            continue;
+        }
+
+        int byte_offset = m_addrress- tr->start_address;
+        int nibble_offset = byte_offset * 2;
+
+        if(nibble_offset + m_length > (int)strlen(tr->object_code)){
+            fprintf(stderr, "Warning: M record at %06X exceeds T data range \n", m_addrress);
+            continue;
+        }
+
+        char field[16];
+        if (m_length >= (int)sizeof(field)){
+            m_length = sizeof(field) - 1;
+
+            strncpy(field, tr->object_code + nibble_offset, m_length);
+            field[m_length] = '\0';
+
+            long value = strtol(field, NULL, 16);
+            value += relocation_addr;
+
+            char fmt[16]; 
+            char new_field[16];
+
+            sprintf(fmt, "%%0%dlX", m_length);
+            sprintf(new_field, fmt, value);
+
+            memcpy(tr->object_code + nibble_offset, new_field, m_length);
+        }
+
+        for(int i = 0; i < t_count; i++){
+            int new_start = t_records[i].start_address + relocation_addr;
+            printf("T %06X %02X %s\n", new_start, t_records[i].length, t_records[i].object_code);
+        }
+
+        int new_exec = exec_addr + relocation_addr;
+        printf("E %06X\n", new_exec);
+    }
 
  }
