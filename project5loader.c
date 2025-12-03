@@ -9,7 +9,7 @@ void relocate_and_print(TextRecord *t_records, int t_count, ModRecord *m_records
 int main(int argc, char *argv[])
 {
 
-    // ensure correct number of arguments, if arguments are not correct, print usage message
+    // Ensure correct number of arguments, if arguments are not correct, print usage message
     // stderr is the standard error stream - it use to print error messages, warnings, and diagnostics.
     if (argc != 4)
     {
@@ -56,9 +56,7 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-
-
- void parse_object_file(FILE *file, TextRecord *t_records, int *t_count, ModRecord *m_records, int *m_count, int *start_addr, int *prog_len, int *exec_addr) {
+void parse_object_file(FILE *file, TextRecord *t_records, int *t_count, ModRecord *m_records, int *m_count, int *start_addr, int *prog_len, int *exec_addr) {
     char line[MAX_LINE_LENGTH];
 
     // removes newlines
@@ -134,23 +132,22 @@ int main(int argc, char *argv[])
     }
 }
 
- void relocate_and_print(TextRecord *t_records, int t_count, ModRecord *m_records, int m_count, int relocation_addr, int exec_addr, const char *machine_type){
-
-
+void relocate_and_print(TextRecord *t_records, int t_count, ModRecord *m_records, int m_count, int relocation_addr, int exec_addr, const char *machine_type)
+{
     (void)machine_type;
 
-    for(int i =0 ; i < m_count; i++){
+    for(int i =0 ; i < m_count; i++) {
         int m_addrress= m_records[i].address;
         int m_length = m_records[i].length;
 
-
         TextRecord *tr = NULL;
-        for(int t = 0; t < t_count; t++){
+
+        for(int t = 0; t < t_count; t++) {
             int start = t_records[t].start_address;
             int end = start + t_records[t].length;
 
             if(m_addrress >= start && m_addrress < end){
-                tr = &t_records[i];
+                tr = &t_records[t];
                 break;
             }
         }
@@ -162,16 +159,17 @@ int main(int argc, char *argv[])
 
         int byte_offset = m_addrress- tr->start_address;
         int nibble_offset = byte_offset * 2;
+        int obj_len = (int)strlen(tr->object_code);
 
-        if(nibble_offset + m_length > (int)strlen(tr->object_code)){
+        if(nibble_offset + m_length > obj_len){
             fprintf(stderr, "Warning: M record at %06X exceeds T data range \n", m_addrress);
             continue;
         }
 
         char field[16];
-        if (m_length >= (int)sizeof(field)){
-            m_length = sizeof(field) - 1;
-
+        if (m_length > (int)sizeof(field) - 1) {
+            m_length = (int)sizeof(field) - 1;
+        }
             strncpy(field, tr->object_code + nibble_offset, m_length);
             field[m_length] = '\0';
 
@@ -187,13 +185,12 @@ int main(int argc, char *argv[])
             memcpy(tr->object_code + nibble_offset, new_field, m_length);
         }
 
-        for(int i = 0; i < t_count; i++){
-            int new_start = t_records[i].start_address + relocation_addr;
-            printf("T %06X %02X %s\n", new_start, t_records[i].length, t_records[i].object_code);
+        for(int t = 0; t < t_count; t++) {
+            int new_start = t_records[t].start_address + relocation_addr;
+            printf("T %06X %02X %s\n", new_start, t_records[t].length, t_records[t].object_code);
         }
 
         int new_exec = exec_addr + relocation_addr;
         printf("E %06X\n", new_exec);
-    }
-
- }
+    
+}
